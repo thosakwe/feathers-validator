@@ -219,7 +219,7 @@ module.exports = function (data, rules) {
     }
 
     //Yay
-    var keys = Object.keys(data);
+    var keys = Object.keys(rules);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var rule = rules[key];
