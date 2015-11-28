@@ -35,7 +35,7 @@ var myService = {
 		}
 }
 
-var app = feathers();
+var app = feathers().configure(feathers.rest());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
