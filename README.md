@@ -14,25 +14,25 @@ var feathers = require('feathers');
 
 var myService = {
 	create: function(data, params, callback) {
-		var Validator = require('feathers-validator');
-		var validator = new Validator(data, {
-			username: 'required|max:255',
-			password: 'required|min:6',
-			email: 'required|email',
-			add_to_mailing_list: 'required|boolean'
-		});
-		
-		if (validator.errors.length == 0) {
-			//Request is valid! Do stuff safely, without
-			//breaking your app!
-			//...
-			callback(null, {error: 'success'});
-		} else {
-			//Validation errors occurred.
-			//...
-			callback(null, {error: 'failure', errors: validator.errors});
+			var Validator = require('feathers-validator');
+			var validator = new Validator(data, {
+				username: 'required|max:255',
+				password: 'required|min:6',
+				email: 'required|email',
+				add_to_mailing_list: 'required|boolean'
+			});
+			
+			if (validator.errors.length == 0) {
+				//Request is valid! Do stuff safely, without
+				//breaking your app!
+				//...
+				callback(null, {error: 'success'});
+			} else {
+				//Validation errors occurred.
+				//...
+				callback(null, {error: 'failure', errors: validator.errors});
+			}
 		}
-	}
 }
 
 var app = feathers();
