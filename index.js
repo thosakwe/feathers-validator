@@ -6,6 +6,52 @@ if (!String.prototype.startsWith) {
     };
 }
 
+function validatorFunctionFor(criterion_, params_, data) {
+
+    var generateFunction = function (criterion, params) {
+        if (criterion === 'required')
+            return generateRequiredValidatorFunction();
+
+        else if (criterion === 'alpha_dash')
+            return generateAlphaDashValidatorFunction();
+        else if (criterion === 'alpha_num')
+            return generateAlphaNumValidatorFunction();
+        else if (criterion === 'boolean')
+            return generateBooleanValidatorFunction();
+        else if (criterion === 'confirmed')
+            return generateConfirmedValidatorFunction();
+        else if (criterion === 'email')
+            return generateEmailValidatorFunction();
+        else if (criterion === 'integer')
+            return generateIntegerValidatorFunction();
+        else if (criterion === 'max')
+            return generateMaxValidatorFunction(params);
+        else if (criterion === 'min')
+            return generateMinValidatorFunction(params);
+        else if (criterion === 'negative')
+            return generateNegativeValidatorFunction();
+        else if (criterion === 'numeric')
+            return generateNumericValidatorFunction();
+        else if (criterion === 'positive')
+            return generatePositiveValidatorFunction();
+        else if (criterion === 'regex')
+            return generateRegexValidatorFunction(params);
+
+        return null; //Fallthrough
+    }
+
+    //If parameters were not given already
+    if (params_ == undefined) {
+        //Parse criteria with colons
+        var splitByPipe = criterion_.split(':');
+
+        if (splitByPipe.length > 1) {
+            var criterion = splitByPipe[0];
+            return generateFunction(criterion, splitByPipe[1].split(','));
+        } else return generateFunction(criterion_);
+    } else return generateFunction(criterion_, params_);
+}
+
 //Validator generators.
 //If you want to add a new one, include a generator function here.
 //The generator must return a function(key, value).
@@ -15,10 +61,73 @@ if (!String.prototype.startsWith) {
 //{valid: false, error: 'Your error message here'}
 //Otherwise, the validator will crash.
 
-function generateIntegerValidatorFunction() {
+function generateAlphaDashValidatorFunction() {
     "use strict";
     return function (key, value) {
-        var testNumeric = generateNumericValidatorFunction()(value);
+        var regex = /^[A-Za-z0-9_-]+$/;
+        if (regex.test(value)) return {valid: true};
+        else return {
+            valid: false,
+            error: 'The ' + key + ' field must only contain letters, numbers, dashes or underscores.'
+        }
+    }
+}
+
+function generateAlphaNumValidatorFunction() {
+    "use strict";
+    return function (key, value) {
+        var regex = /^[A-Za-z0-9]+$/;
+        if (regex.test(value)) return {valid: true};
+        else return {
+            valid: false,
+            error: 'The ' + key + ' field must only contain letters and numbers.'
+        }
+    }
+}
+
+function generateBooleanValidatorFunction() {
+    "use strict";
+    return function (key, value) {
+        if (value == 0 || value == 1) return {valid: true};
+        else return {
+            valid: false,
+            error: 'The ' + key + ' field must have a value of true or false.'
+        }
+    }
+}
+
+function generateConfirmedValidatorFunction(params, data) {
+    "use strict";
+    return function (key, value) {
+        if (value) {
+            if (data[key] === data[key + "_confirmation"]) return {valid: true};
+            else return {
+                valid: false,
+                error: 'The two ' + key + ' fields must match.'
+            }
+        } else return {
+            valid: false,
+            error: 'The ' + key + ' field must be present, and it must be confirmed.'
+        }
+    }
+}
+
+function generateEmailValidatorFunction() {
+    "use strict";
+    return function (key, value) {
+        //Check for RFC 5322 compliance.
+        var regex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        if (regex.test(value)) return {valid: true};
+        else return {
+            valid: false,
+            error: 'The ' + key + ' field must be a valid e-mail address.'
+        }
+    }
+}
+
+function generateIntegerValidatorFunction() {
+    return function (key, value) {
+        var testNumeric = generateNumericValidatorFunction()(key, value);
         if (testNumeric.valid) {
             if (value % 1 === 0) {
                 return {valid: true}
@@ -26,19 +135,18 @@ function generateIntegerValidatorFunction() {
                 valid: false,
                 error: 'The ' + key + ' field must be a positive or negative integer.'
             }
-        } else return testNumeric.error;
+        } else return testNumeric;
     }
 }
 
 function generateMinValidatorFunction(params) {
-    "use strict";
     return function (key, value) {
         try {
             if (typeof value === 'number' || !isNaN(value)) {
                 if (value >= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field must greater than or equal to ' + params[0] + '.'
+                    error: 'The ' + key + ' field must be greater than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
                 if (key.length >= params[0]) return {valid: true};
@@ -59,14 +167,13 @@ function generateMinValidatorFunction(params) {
     }
 }
 function generateMaxValidatorFunction(params) {
-    "use strict";
     return function (key, value) {
         try {
             if (typeof value === 'number' || !isNaN(value)) {
                 if (value <= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field must less than or equal to ' + params[0] + '.'
+                    error: 'The ' + key + ' field must be less than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
                 if (key.length <= params[0]) return {valid: true};
@@ -88,21 +195,19 @@ function generateMaxValidatorFunction(params) {
 }
 
 function generateNegativeValidatorFunction() {
-    "use strict";
     return function (key, value) {
-        var testInteger = generateIntegerValidatorFunction()(value);
+        var testInteger = generateIntegerValidatorFunction()(key, value);
         if (testInteger.valid) {
             if (value < 0) return {valid: true}
             else return {
                 valid: false,
                 error: 'The ' + key + ' field must be a negative integer.'
             }
-        } else return testInteger.error;
+        } else return testInteger;
     }
 }
 
 function generateNumericValidatorFunction() {
-    "use strict";
     return function (key, value) {
         if (typeof value === 'number' || !isNaN(value)) {
             return {valid: true}
@@ -114,21 +219,31 @@ function generateNumericValidatorFunction() {
 }
 
 function generatePositiveValidatorFunction() {
-    "use strict";
     return function (key, value) {
-        var testInteger = generateIntegerValidatorFunction()(value);
+        var testInteger = generateIntegerValidatorFunction()(key, value);
         if (testInteger.valid) {
             if (value > 0) return {valid: true}
             else return {
                 valid: false,
                 error: 'The ' + key + ' field must be a positive integer.'
             }
-        } else return testInteger.error;
+        } else return testInteger;
+    }
+}
+
+function generateRegexValidatorFunction(params) {
+    "use strict";
+    return function (key, value) {
+        var regex = new RegExp("^" + params[0] + "$");
+        if (regex.test(value)) return {valid: true};
+        else return {
+            valid: false,
+            error: 'The ' + key + ' field must match this regular expression: \'' + params[0] + "'."
+        }
     }
 }
 
 function generateRequiredValidatorFunction() {
-    "use strict";
     return function (key, value) {
         if (value) return {valid: true}
         else return {
@@ -148,7 +263,7 @@ function generateRequiredValidatorFunction() {
 
 //Simply instantiate it with your form data and validation rules.
 //The form data and validation rules should be objects.
-//The errors property is a string array containing any validation errors encountered.
+//The errors() method returns a string array containing any validation errors encountered.
 
 //Example:
 
@@ -161,7 +276,7 @@ function generateRequiredValidatorFunction() {
  add_to_mailing_list: 'required|boolean'
  });
 
- console.log('There were ' + validator.errors.length + ' errors in your input.');
+ console.log('There were ' + validator.errors().length + ' errors in your input.');
  */
 
 //RULES:
@@ -181,42 +296,8 @@ function generateRequiredValidatorFunction() {
 //  }
 
 module.exports = function (data, rules) {
-    "use strict";
 
-    this.errors = [];
-
-    this.validatorFunctionFor = function (criterion_, params_) {
-
-        var generateFunction = function (criterion, params) {
-            if (criterion === 'integer')
-                return generateIntegerValidatorFunction();
-            else if (criterion === 'max')
-                return generateMaxValidatorFunction(params);
-            else if (criterion === 'min')
-                return generateMinValidatorFunction(params);
-            else if (criterion === 'negative')
-                return generateNegativeValidatorFunction();
-            else if (criterion === 'numeric')
-                return generateNumericValidatorFunction();
-            else if (criterion === 'positive')
-                return generatePositiveValidatorFunction();
-            else if (criterion === 'required')
-                return generateRequiredValidatorFunction();
-
-            return null; //Fallthrough
-        }
-
-        //If parameters were not given already
-        if (!params_) {
-            //Parse criteria with pipes
-            var splitByPipe = criterion_.split('|');
-
-            if (splitByPipe.length > 1) {
-                var criterion = splitByPipe[0];
-                return generateFunction(criterion_, splitByPipe[1].split(','));
-            } else return generateFunction(criterion_);
-        } else return generateFunction(criterion_, params_);
-    }
+    var errors = [];
 
     //Yay
     var keys = Object.keys(rules);
@@ -227,26 +308,35 @@ module.exports = function (data, rules) {
             // i.e. 'min:6'
             var stringCriteria = rule.split('|');
             stringCriteria.forEach(function (criterion) {
-                var assert = this.validatorFunctionFor(criterion);
-                if (assert) {
-                    var result = assert(key, data[key]);
-                    if (!result.valid) {
-                        this.errors.push(result.error);
-                    }
-                } else throw new Error('Unrecognized criterion: "' + criterion + '"');
+                if (data[key] || rules[key].indexOf('required') != -1) {
+                    var assert = validatorFunctionFor(criterion, null, data);
+                    if (assert) {
+                        var result = assert(key, data[key]);
+                        if (!result.valid) {
+                            errors.push(result.error);
+                        }
+                    } else throw new Error('Unrecognized criterion: "' + criterion + '"');
+                }
             });
         } else if (typeof rule === 'object') {
             // i.e. { min: 6 }
             var objectCriteria = Object.keys(rule);
             objectCriteria.forEach(function (criterion) {
-                var assert = this.validatorFunctionFor(criterion, typeof rule[key] === 'object' ? rule[key] : [rule[key]]);
-                if (assert) {
-                    var result = assert(key, data[key]);
-                    if (!result.valid) {
-                        this.errors.push(result.error);
-                    }
-                } else throw new Error('Unrecognized criterion: "' + criterion + '"');
+                if (data[key] || rules[key].indexOf('required') != -1) {
+                    var assert = validatorFunctionFor(criterion, typeof rule[criterion] === 'object' ? rule[criterion] : [rule[criterion]], data);
+                    if (assert) {
+                        var result = assert(key, data[key]);
+                        if (!result.valid) {
+                            errors.push(result.error);
+                        }
+                    } else throw new Error('Unrecognized criterion: "' + criterion + '"');
+                }
             });
         }
+    }
+
+    this.errors = function () {
+        "use strict";
+        return errors;
     }
 };

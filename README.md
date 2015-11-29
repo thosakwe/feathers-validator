@@ -2,10 +2,10 @@
 
 WIP. Validator for Feathers services, or any service.
 
-```require('feathers-validator')``` will exports a class.
+```require('feathers-validator')``` will export a class.
 Simply instantiate it with your form data and validation rules.
 The form data and validation rules should be objects.
-The errors property is a string array containing any validation errors encountered.
+The errors() method returns a string array containing any validation errors encountered.
 
 Example:
 
@@ -22,7 +22,9 @@ var myService = {
 				add_to_mailing_list: 'required|boolean'
 			});
 			
-			if (validator.errors.length == 0) {
+			var errors = validator.errors();
+			
+			if (errors.length == 0) {
 				//Request is valid! Do stuff safely, without
 				//breaking your app!
 				//...
@@ -30,7 +32,7 @@ var myService = {
 			} else {
 				//Validation errors occurred.
 				//...
-				callback(null, {error: 'failure', errors: validator.errors});
+				callback(null, {error: 'failure', errors: errors});
 			}
 		}
 }
@@ -68,12 +70,21 @@ Can take any of the following forms:
   ```
   
 ##Available Validation Rules
+
+Draws inspiration from [Laravel's validation rules](http://laravel.com/docs/5.1/validation#available-validation-rules).
+
+*	**alpha_dash**: Asserts a string matches the Regular Expression ```/^[A-Za-z0-9_-]$/```.
+*	**alpha_num**: Asserts a string matches the Regular Expression ```/^[A-Za-z0-9]$/```
+*	**boolean**: Asserts that input has a truthy or falsy value (true, false, 0 or 1)
+*	**confirmed**: Like in Laravel, The field under validation must have a matching field of foo_confirmation.
+*	**email**: Asserts a string complies to the RFC 5322 e-mail standard.
 *	**integer**: Asserts a datum is an integer.
 *	**max**: Limits a string to a maximum length, or restricts the magnitude of a Number.
 *	**min**: Limits a string to a minimum length, or restricts the magnitude of a Number.
 *	**negative**: Asserts a Number is less than zero.
 *	**numeric**: Asserts a datum is a Number.
 *	**positive**: Asserts a Number is greater than zero.
+*	**regex**: Asserts a string matches a given Regular Expression.
 *	**required**: Asserts a key is present in the request.
   
 ##Contributing to feathers-validator

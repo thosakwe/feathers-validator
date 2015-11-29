@@ -1,6 +1,6 @@
 {
   "name": "feathers-validator",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A validator for Feathers services.",
   "main": "index.js",
   "scripts": {
