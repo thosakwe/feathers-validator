@@ -19,7 +19,7 @@ function validatorFunctionFor(criterion_, params_, data) {
         else if (criterion === 'boolean')
             return generateBooleanValidatorFunction();
         else if (criterion === 'confirmed')
-            return generateConfirmedValidatorFunction();
+            return generateConfirmedValidatorFunction(params, data);
         else if (criterion === 'email')
             return generateEmailValidatorFunction();
         else if (criterion === 'integer')
@@ -146,13 +146,13 @@ function generateMinValidatorFunction(params) {
                 if (value >= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field must be greater than or equal to ' + params[0] + '.'
+                    error: 'The size of the ' + key + ' field must be greater than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
                 if (key.length >= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field cannot be less than ' + params[0] + 'characters long.'
+                    error: 'The size of the ' + key + ' field cannot be less than ' + params[0] + 'characters long.'
                 }
             } else return {
                 valid: false,
@@ -173,13 +173,13 @@ function generateMaxValidatorFunction(params) {
                 if (value <= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field must be less than or equal to ' + params[0] + '.'
+                    error: 'The size of the ' + key + ' field must be less than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
                 if (key.length <= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The ' + key + ' field cannot be more than ' + params[0] + 'characters long.'
+                    error: 'The size of the ' + key + ' field cannot be more than ' + params[0] + 'characters long.'
                 }
             } else return {
                 valid: false,
