@@ -142,7 +142,7 @@ function generateIntegerValidatorFunction() {
 function generateMinValidatorFunction(params) {
     return function (key, value) {
         try {
-            if (typeof value === 'number' || !isNaN(value)) {
+            if (typeof value === 'number' || !isNaN(value) || value == undefined) {
                 if (value >= params[0]) return {valid: true};
                 else return {
                     valid: false,
@@ -154,9 +154,6 @@ function generateMinValidatorFunction(params) {
                     valid: false,
                     error: 'The size of the ' + key + ' field cannot be less than ' + params[0] + 'characters long.'
                 }
-            } else return {
-                valid: false,
-                error: 'Validation error: Cannot restrict length of object of type ' + typeof value
             }
         } catch (error) {
             return {
@@ -169,7 +166,7 @@ function generateMinValidatorFunction(params) {
 function generateMaxValidatorFunction(params) {
     return function (key, value) {
         try {
-            if (typeof value === 'number' || !isNaN(value)) {
+            if (typeof value === 'number' || !isNaN(value) || value == undefined) {
                 if (value <= params[0]) return {valid: true};
                 else return {
                     valid: false,
@@ -181,9 +178,6 @@ function generateMaxValidatorFunction(params) {
                     valid: false,
                     error: 'The size of the ' + key + ' field cannot be more than ' + params[0] + 'characters long.'
                 }
-            } else return {
-                valid: false,
-                error: 'Validation error: Cannot restrict length of object of type ' + typeof value
             }
         } catch (error) {
             return {
