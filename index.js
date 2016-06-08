@@ -88,7 +88,7 @@ function generateAlphaNumValidatorFunction() {
 function generateBooleanValidatorFunction() {
     "use strict";
     return function (key, value) {
-        if (value == 0 || value == 1) return {valid: true};
+        if ((value == 0 || value == 1) || (typeof value == "string" && (value =='true' || value =='false'))) return {valid: true};
         else return {
             valid: false,
             error: 'The ' + key + ' field must have a value of true or false.'
