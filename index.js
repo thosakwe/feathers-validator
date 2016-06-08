@@ -88,7 +88,7 @@ function generateAlphaNumValidatorFunction() {
 function generateBooleanValidatorFunction() {
     "use strict";
     return function (key, value) {
-        if ((value == 0 || value == 1) || (typeof value == "string" && (value =='true' || value =='false'))) return {valid: true};
+        if ((value == 0 || value == 1) || (typeof value == "string" && (value =='true' || value =='false')) || (typeof value == "boolean")) return {valid: true};
         else return {
             valid: false,
             error: 'The ' + key + ' field must have a value of true or false.'
@@ -239,7 +239,7 @@ function generateRegexValidatorFunction(params) {
 
 function generateRequiredValidatorFunction() {
     return function (key, value) {
-        if (value) return {valid: true}
+        if (value || (typeof value == "boolean")) return {valid: true}
         else return {
             valid: false,
             error: 'The ' + key + ' field is required.'
