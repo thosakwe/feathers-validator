@@ -247,6 +247,7 @@ function generateRequiredValidatorFunction() {
     }
 }
 
+
 //Exports a class.
 
 //This class looks something like this:
@@ -291,7 +292,7 @@ function generateRequiredValidatorFunction() {
 
 module.exports = function (data, rules) {
 
-    var errors = [];
+    var errors = {};
 
     //Yay
     var keys = Object.keys(rules);
@@ -307,7 +308,8 @@ module.exports = function (data, rules) {
                     if (assert) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
-                            errors.push(result.error);
+                          var dataVal = data[key] || "";
+                          addError(key, result.error, criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
@@ -321,13 +323,34 @@ module.exports = function (data, rules) {
                     if (assert) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
-                            errors.push(result.error);
+                            var dataVal = data[key] || "";
+                            addError(key, result.error, criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
             });
         }
     }
+
+    /***
+    Format to mongoose type error
+    "label": {
+      "message": "Path `label` is required.",
+      "name": "ValidatorError",
+      "properties": {
+        "type": "required",
+        "message": "Path `{PATH}` is required.",
+        "path": "label",
+        "value": ""
+      },
+      "kind": "required",
+      "path": "label",
+      "value": ""
+    }
+    */
+    function addError(key, message, kind, name, value) {
+      errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+    };
 
     this.errors = function () {
         "use strict";
