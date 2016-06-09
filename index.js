@@ -88,7 +88,7 @@ function generateAlphaNumValidatorFunction() {
 function generateBooleanValidatorFunction() {
     "use strict";
     return function (key, value) {
-        if (value == 0 || value == 1) return {valid: true};
+        if ((value == 0 || value == 1) || (typeof value == "string" && (value =='true' || value =='false')) || (typeof value == "boolean")) return {valid: true};
         else return {
             valid: false,
             error: 'The ' + key + ' field must have a value of true or false.'
@@ -239,13 +239,14 @@ function generateRegexValidatorFunction(params) {
 
 function generateRequiredValidatorFunction() {
     return function (key, value) {
-        if (value) return {valid: true}
+        if (value || (typeof value == "boolean")) return {valid: true}
         else return {
             valid: false,
             error: 'The ' + key + ' field is required.'
         }
     }
 }
+
 
 //Exports a class.
 
@@ -291,7 +292,7 @@ function generateRequiredValidatorFunction() {
 
 module.exports = function (data, rules) {
 
-    var errors = [];
+    var errors = {};
 
     //Yay
     var keys = Object.keys(rules);
@@ -307,7 +308,8 @@ module.exports = function (data, rules) {
                     if (assert) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
-                            errors.push(result.error);
+                          var dataVal = data[key] || "";
+                          addError(key, result.error, criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
@@ -321,13 +323,34 @@ module.exports = function (data, rules) {
                     if (assert) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
-                            errors.push(result.error);
+                            var dataVal = data[key] || "";
+                            addError(key, result.error, criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
             });
         }
     }
+
+    /***
+    Format to mongoose type error
+    "label": {
+      "message": "Path `label` is required.",
+      "name": "ValidatorError",
+      "properties": {
+        "type": "required",
+        "message": "Path `{PATH}` is required.",
+        "path": "label",
+        "value": ""
+      },
+      "kind": "required",
+      "path": "label",
+      "value": ""
+    }
+    */
+    function addError(key, message, kind, name, value) {
+      errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+    };
 
     this.errors = function () {
         "use strict";
