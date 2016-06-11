@@ -381,7 +381,9 @@ module.exports = function (data, rules) {
     }
     */
     function addError(key, message, kind, name, value) {
-      errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+      if(!errors[key]) {
+        errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+      }
     };
 
     this.errors = function () {
