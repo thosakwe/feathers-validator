@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 //Polyfills, if you're not using ES6.
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
@@ -36,7 +38,10 @@ function validatorFunctionFor(criterion_, params_, data) {
             return generatePositiveValidatorFunction();
         else if (criterion === 'regex')
             return generateRegexValidatorFunction(params);
-
+        else if (criterion === 'date')
+            return generateDateValidatorFunction(params);
+        else if(criterion === 'enum')
+            return generateEnumValidatorFunction(params);
         return null; //Fallthrough
     }
 
@@ -235,6 +240,33 @@ function generateRegexValidatorFunction(params) {
             error: 'The ' + key + ' field must match this regular expression: \'' + params[0] + "'."
         }
     }
+}
+
+function generateDateValidatorFunction(params) {
+    return function (key, value) {
+        var dateFormat = params[0];
+        if(moment(value, dateFormat, true).isValid()) {
+          return { valid: true };
+        } else {
+          return {
+            valid: false,
+            error: 'The ' + key + ' field is invalid.'
+          };
+        }
+    };
+}
+
+function generateEnumValidatorFunction(params) {
+    return function (key, value) {
+      if(params.indexOf(value) === -1) {
+        return {
+          valid: false,
+          error: 'The ' + key + ' field is invalid.'
+        };
+      } else {
+        return { valid: true };
+      }
+    };
 }
 
 function generateRequiredValidatorFunction() {
