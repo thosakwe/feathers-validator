@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 //Polyfills, if you're not using ES6.
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
@@ -36,7 +38,10 @@ function validatorFunctionFor(criterion_, params_, data) {
             return generatePositiveValidatorFunction();
         else if (criterion === 'regex')
             return generateRegexValidatorFunction(params);
-
+        else if (criterion === 'date')
+            return generateDateValidatorFunction(params);
+        else if(criterion === 'enum')
+            return generateEnumValidatorFunction(params);
         return null; //Fallthrough
     }
 
@@ -237,6 +242,33 @@ function generateRegexValidatorFunction(params) {
     }
 }
 
+function generateDateValidatorFunction(params) {
+    return function (key, value) {
+        var dateFormat = params[0];
+        if(moment(value, dateFormat, true).isValid()) {
+          return { valid: true };
+        } else {
+          return {
+            valid: false,
+            error: 'The ' + key + ' field is invalid.'
+          };
+        }
+    };
+}
+
+function generateEnumValidatorFunction(params) {
+    return function (key, value) {
+      if(params.indexOf(value) === -1) {
+        return {
+          valid: false,
+          error: 'The ' + key + ' field is invalid.'
+        };
+      } else {
+        return { valid: true };
+      }
+    };
+}
+
 function generateRequiredValidatorFunction() {
     return function (key, value) {
         if (value || (typeof value == "boolean")) return {valid: true}
@@ -349,7 +381,9 @@ module.exports = function (data, rules) {
     }
     */
     function addError(key, message, kind, name, value) {
-      errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+      if(!errors[key]) {
+        errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
+      }
     };
 
     this.errors = function () {
