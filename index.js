@@ -322,8 +322,9 @@ function generateRequiredValidatorFunction() {
 //      rule: ['foo', 'bar']
 //  }
 
-module.exports = function (data, rules) {
+module.exports = function (data, rules, messages) {
 
+    messages = messages || {};
     var errors = {};
 
     //Yay
@@ -341,7 +342,7 @@ module.exports = function (data, rules) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
                           var dataVal = data[key] || "";
-                          addError(key, result.error, criterion, "ValidatorError", dataVal);
+                          addError(key, getErrorMessage(key, criterion, result.error), criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
@@ -356,7 +357,7 @@ module.exports = function (data, rules) {
                         var result = assert(key, data[key]);
                         if (!result.valid) {
                             var dataVal = data[key] || "";
-                            addError(key, result.error, criterion, "ValidatorError", dataVal);
+                            addError(key, getErrorMessage(key, criterion, result.error), criterion, "ValidatorError", dataVal);
                         }
                     } else throw new Error('Unrecognized criterion: "' + criterion + '"');
                 }
@@ -384,6 +385,12 @@ module.exports = function (data, rules) {
       if(!errors[key]) {
         errors[key] = { message : message, name : name, properties: { type : kind, message: message, path: key, value: value }, kind:kind, path:key, value:value };
       }
+    };
+
+    function getErrorMessage(key, criterion, defaultMessage) {
+      criterion = criterion.split(':')[0];
+      var messageKey = key + '.' + criterion;
+      return (!messages[messageKey]) ? defaultMessage : messages[messageKey];
     };
 
     this.errors = function () {
