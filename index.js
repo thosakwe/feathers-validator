@@ -148,16 +148,16 @@ function generateMinValidatorFunction(params) {
     return function (key, value) {
         try {
             if (typeof value === 'number' || !isNaN(value) || value == undefined) {
-                if (value >= params[0]) return {valid: true};
+                if ((value + '').length >= params[0]) return {valid: true};
                 else return {
                     valid: false,
                     error: 'The size of the ' + key + ' field must be greater than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
-                if (key.length >= params[0]) return {valid: true};
+                if (value.length >= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The size of the ' + key + ' field cannot be less than ' + params[0] + 'characters long.'
+                    error: 'The size of the ' + key + ' field cannot be less than ' + params[0] + ' characters long.'
                 }
             }
         } catch (error) {
@@ -172,16 +172,16 @@ function generateMaxValidatorFunction(params) {
     return function (key, value) {
         try {
             if (typeof value === 'number' || !isNaN(value) || value == undefined) {
-                if (value <= params[0]) return {valid: true};
+                if ((value + '').length <= params[0]) return {valid: true};
                 else return {
                     valid: false,
                     error: 'The size of the ' + key + ' field must be less than or equal to ' + params[0] + '.'
                 }
             } else if (typeof value === 'string') {
-                if (key.length <= params[0]) return {valid: true};
+                if (value.length <= params[0]) return {valid: true};
                 else return {
                     valid: false,
-                    error: 'The size of the ' + key + ' field cannot be more than ' + params[0] + 'characters long.'
+                    error: 'The size of the ' + key + ' field cannot be more than ' + params[0] + ' characters long.'
                 }
             }
         } catch (error) {
